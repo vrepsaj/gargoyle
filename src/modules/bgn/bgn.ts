@@ -40,6 +40,7 @@ import GargoyleModalBuilder from '@src/system/backend/builders/gargoyleModalBuil
 import { sleep, SQL } from 'bun';
 import Emojis from '@src/system/backend/tools/emojis.js';
 import GargoyleEvent from '@src/system/backend/classes/gargoyleEvent';
+import client from '@src/system/botClient';
 
 export default class Brads extends GargoyleModule {
     public override name: string = 'bgn';
@@ -88,7 +89,7 @@ export default class Brads extends GargoyleModule {
                 .addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
                         '# Staff, Support & Appeals' +
-                            '\n> Click the buttons below to get support, be it to report an issue, apply for staff or appeal a ban, if you just have a question feel free to open a ticket.'
+                        '\n> Click the buttons below to get support, be it to report an issue, apply for staff or appeal a ban, if you just have a question feel free to open a ticket.'
                     )
                 )
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large))
@@ -148,13 +149,13 @@ export default class Brads extends GargoyleModule {
                 .addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
                         `# If you are having the "missing asset" or "server is running a different version of:" error please try the following.\n` +
-                            `\n` +
-                            `> 1. Unsubscribe from all mods via Steam.\n` +
-                            `> 2. Delete 304390 folder (SteamLibrary -> steamapps -> workshop -> content).\n` +
-                            `> 3. Delete appworkshop_304930.acf (SteamLibrary -> steamapps -> workshop).\n` +
-                            `> 4. Delete Unturned_Data folder  (SteamLibrary -> steamapps -> common -> Unturned).\n` +
-                            `> 5. Verify integrity of Unturned.\n` +
-                            `> 6. Start game and try again.\n`
+                        `\n` +
+                        `> 1. Unsubscribe from all mods via Steam.\n` +
+                        `> 2. Delete 304390 folder (SteamLibrary -> steamapps -> workshop -> content).\n` +
+                        `> 3. Delete appworkshop_304930.acf (SteamLibrary -> steamapps -> workshop).\n` +
+                        `> 4. Delete Unturned_Data folder  (SteamLibrary -> steamapps -> common -> Unturned).\n` +
+                        `> 5. Verify integrity of Unturned.\n` +
+                        `> 6. Start game and try again.\n`
                     )
                 )
                 .setAccentColor(0x0ed6ff)
@@ -195,7 +196,7 @@ export default class Brads extends GargoyleModule {
         // Id      | SteamId     | CharacterName | RankId       | ConnectDate | DisconnectDate
         // INT(10) | VARCHAR(50) | VARCHAR(255)  | VARCHAR(255) | DATETIME    | DATETIME
 
-        // Staff hours are counted from last Sunday 15:00 to the following Sunday 15:00
+        // Staff hours are counted from last Sunday 19:00 to the following Sunday 19:00
         // If specified, only get the last X days
         let results = [];
         if (lastDays === -1) {
@@ -205,31 +206,31 @@ export default class Brads extends GargoyleModule {
                 FROM StaffActivities
                 WHERE ConnectDate >= DATE_ADD(
                     DATE_SUB(CURRENT_DATE(), INTERVAL (WEEKDAY(CURRENT_DATE()) + 8) DAY),
-                    INTERVAL 15 HOUR
+                    INTERVAL 19 HOUR
                 )
                 AND ConnectDate < DATE_ADD(
                     DATE_ADD(
                         DATE_SUB(CURRENT_DATE(), INTERVAL (WEEKDAY(CURRENT_DATE()) + 8) DAY),
                         INTERVAL 7 DAY
                     ),
-                    INTERVAL 15 HOUR
+                    INTERVAL 19 HOUR
                 )
             `;
         } else if (lastDays === 0) {
-            // Get data from last Sunday 15:00 to this Sunday 15:00
+            // Get data from last Sunday 19:00 to this Sunday 19:00
             results = await sql`
                 SELECT SteamId, CharacterName, RankId, ConnectDate, DisconnectDate
                 FROM StaffActivities
                 WHERE ConnectDate >= DATE_ADD(
                     DATE_SUB(CURRENT_DATE(), INTERVAL (WEEKDAY(CURRENT_DATE()) + 1) DAY),
-                    INTERVAL 15 HOUR
+                    INTERVAL 19 HOUR
                 )
                 AND ConnectDate < DATE_ADD(
                     DATE_ADD(
                         DATE_SUB(CURRENT_DATE(), INTERVAL (WEEKDAY(CURRENT_DATE()) + 1) DAY),
                         INTERVAL 7 DAY
                     ),
-                    INTERVAL 15 HOUR
+                    INTERVAL 19 HOUR
                 )
             `;
         } else {
@@ -375,8 +376,7 @@ export default class Brads extends GargoyleModule {
                             return new SectionBuilder()
                                 .addTextDisplayComponents(
                                     new TextDisplayBuilder().setContent(
-                                        `- ${member ? `<@!${member.id}>` : thread.name.split('-')[1]}${
-                                            thread.createdAt ? ` on <t:${Math.floor(thread.createdAt.getTime() / 1000)}:f>` : ``
+                                        `- ${member ? `<@!${member.id}>` : thread.name.split('-')[1]}${thread.createdAt ? ` on <t:${Math.floor(thread.createdAt.getTime() / 1000)}:f>` : ``
                                         }`
                                     )
                                 )
@@ -434,8 +434,7 @@ export default class Brads extends GargoyleModule {
                                 return new SectionBuilder()
                                     .addTextDisplayComponents(
                                         new TextDisplayBuilder().setContent(
-                                            `- ${member ? `<@!${member.id}>` : thread.name.split('-')[1]}${
-                                                thread.createdAt ? ` on <t:${Math.floor(thread.createdAt.getTime() / 1000)}:f>` : ``
+                                            `- ${member ? `<@!${member.id}>` : thread.name.split('-')[1]}${thread.createdAt ? ` on <t:${Math.floor(thread.createdAt.getTime() / 1000)}:f>` : ``
                                             }`
                                         )
                                     )
@@ -503,7 +502,7 @@ export default class Brads extends GargoyleModule {
         if (args[0] === 'remove') {
             await interaction.deferUpdate();
             for (const userId of interaction.values) {
-                await (interaction.channel as PrivateThreadChannel).members.remove(userId).catch(() => {});
+                await (interaction.channel as PrivateThreadChannel).members.remove(userId).catch(() => { });
             }
             interaction.editReply({ content: 'Removed all of the selected members.', components: [] });
         }
@@ -550,12 +549,12 @@ export default class Brads extends GargoyleModule {
                                 ),
                                 new TextDisplayBuilder().setContent(
                                     '## Requirements' +
-                                        '\n> - You must be at least 15 years old.' +
-                                        '\n> - You must have at least had 50 hours of gameplay on the server.' +
-                                        '\n> - You must have linked steam with your discord account.' +
-                                        '\n> - You must have a good understanding of the rules.' +
-                                        '\n> - You must not have received any form of punishment 2 weeks before/after applying.' +
-                                        '\n> - You must not be on a Permanent ban agreement when applying, You may apply once it is over.'
+                                    '\n> - You must be at least 15 years old.' +
+                                    '\n> - You must have at least had 50 hours of gameplay on the server.' +
+                                    '\n> - You must have linked steam with your discord account.' +
+                                    '\n> - You must have a good understanding of the rules.' +
+                                    '\n> - You must not have received any form of punishment 2 weeks before/after applying.' +
+                                    '\n> - You must not be on a Permanent ban agreement when applying, You may apply once it is over.'
                                 )
                             )
                             .addActionRowComponents(
@@ -655,8 +654,8 @@ export default class Brads extends GargoyleModule {
             }
 
             if (thread) {
-                await thread.members.add(member.id).catch(() => {});
-                await thread.members.add(interaction.user.id).catch(() => {});
+                await thread.members.add(member.id).catch(() => { });
+                await thread.members.add(interaction.user.id).catch(() => { });
                 await thread.send({
                     components: [
                         new ContainerBuilder().addTextDisplayComponents(
@@ -815,21 +814,21 @@ export default class Brads extends GargoyleModule {
                 args[0],
                 args[0] === 'ban'
                     ? {
-                          content:
-                              `Staff member who banned you : \n` +
-                              `In-game name : \n` +
-                              `Steam profile link : \n` +
-                              `Apology / why you think you should be unbanned :`
-                      }
+                        content:
+                            `Staff member who banned you : \n` +
+                            `In-game name : \n` +
+                            `Steam profile link : \n` +
+                            `Apology / why you think you should be unbanned :`
+                    }
                     : args[0] === 'staff'
-                      ? {
+                        ? {
                             content:
                                 `Staff member being reported : \n` +
                                 `Reason for report : \n` +
                                 `Any relevant Information regarding this report : \n` +
                                 `All relevant proof for this report :`
                         }
-                      : undefined,
+                        : undefined,
 
                 {
                     members: [member],
@@ -871,8 +870,8 @@ export default class Brads extends GargoyleModule {
                             .addTextDisplayComponents(
                                 new TextDisplayBuilder().setContent(
                                     '### Application Rejected\n> You are on a 3 day cooldown from applying for staff. You can apply again <t:' +
-                                        Math.floor(cooldownEnds / 1000) +
-                                        ':R>.'
+                                    Math.floor(cooldownEnds / 1000) +
+                                    ':R>.'
                                 )
                             )
                     ]
@@ -900,17 +899,17 @@ export default class Brads extends GargoyleModule {
                         new ContainerBuilder().addTextDisplayComponents(
                             new TextDisplayBuilder().setContent(
                                 `### Staff Application from <@!${interaction.user.id}>` +
-                                    `\n-# ${staffRoles.map((role) => `<@&${role.id}>`).join(' ')}` +
-                                    `\n**Steam Profile :**` +
-                                    `\n> ${steam}` +
-                                    `\n**Timezone :** ` +
-                                    `\n> ${timezone}` +
-                                    `\n**Other Experience :**` +
-                                    `\n> ${other.replaceAll('\n', '\n> ')}` +
-                                    `\n**Reason for Applying :**` +
-                                    `\n> ${reason.replaceAll('\n', '\n> ')}` +
-                                    `\n**What makes you stand out? :**` +
-                                    `\n> ${stand.replaceAll('\n', '\n> ')}`
+                                `\n-# ${staffRoles.map((role) => `<@&${role.id}>`).join(' ')}` +
+                                `\n**Steam Profile :**` +
+                                `\n> ${steam}` +
+                                `\n**Timezone :** ` +
+                                `\n> ${timezone}` +
+                                `\n**Other Experience :**` +
+                                `\n> ${other.replaceAll('\n', '\n> ')}` +
+                                `\n**Reason for Applying :**` +
+                                `\n> ${reason.replaceAll('\n', '\n> ')}` +
+                                `\n**What makes you stand out? :**` +
+                                `\n> ${stand.replaceAll('\n', '\n> ')}`
                             )
                         ),
                         new ContainerBuilder().addActionRowComponents(
@@ -1042,7 +1041,15 @@ export default class Brads extends GargoyleModule {
 
         messageContent += `-# Updated <t:${Math.floor(Date.now() / 1000)}:F>\n\n`;
 
+        let members = [];
         for (const staffMember of staffMembers) {
+            members.push({
+                highest: (client.guilds.cache.get('1442961061207736672')?.members.cache.get(staffMember.author || '0')?.roles.highest.rawPosition || 0),
+                ...staffMember
+            })
+        }
+
+        for (const staffMember of members.sort((ma, mb) => ma.highest - mb.highest)) {
             let userString = '';
             if (staffMember.author) userString += `<@!${staffMember.author}> `;
             else userString += 'Unknown User ';
