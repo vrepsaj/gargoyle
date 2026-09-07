@@ -1049,7 +1049,7 @@ export default class Brads extends GargoyleModule {
             })
         }
 
-        for (const staffMember of members.sort((ma, mb) => ma.highest - mb.highest)) {
+        for (const staffMember of members.sort((ma, mb) => mb.highest - ma.highest)) {
             let userString = '';
             if (staffMember.author) userString += `<@!${staffMember.author}> `;
             else userString += 'Unknown User ';
